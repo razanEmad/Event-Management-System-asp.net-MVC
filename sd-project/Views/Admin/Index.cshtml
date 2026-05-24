@@ -1,0 +1,166 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml"; // Standard layout for simplicity, could use a specialized admin layout
+}
+
+<section class="admin-section py-5 mt-5">
+    <div class="container">
+        <!-- Admin Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="fw-bold mb-1"><i class="bi bi-shield-lock text-primary me-2"></i>Admin Dashboard</h1>
+                <p class="text-secondary mb-0">System overview and management</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-action="CreateEvent" class="btn btn-primary rounded-pill px-4">
+                    <i class="bi bi-plus-lg me-2"></i>New Event
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-card border-glass shadow-sm h-100 hover-lift">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-primary-subtle text-primary p-3 me-3">
+                            <i class="bi bi-calendar-event fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-secondary small mb-0 text-uppercase fw-semibold">Total Events</p>
+                            <h3 class="fw-bold mb-0">@ViewBag.TotalEvents</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-card border-glass shadow-sm h-100 hover-lift">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-success-subtle text-success p-3 me-3">
+                            <i class="bi bi-ticket-perforated fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-secondary small mb-0 text-uppercase fw-semibold">Total Bookings</p>
+                            <h3 class="fw-bold mb-0">@ViewBag.TotalBookings</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-card border-glass shadow-sm h-100 hover-lift">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-info-subtle text-info p-3 me-3">
+                            <i class="bi bi-people fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-secondary small mb-0 text-uppercase fw-semibold">Total Users</p>
+                            <h3 class="fw-bold mb-0">@ViewBag.TotalUsers</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card bg-card border-glass shadow-sm h-100 hover-lift">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-warning-subtle text-warning p-3 me-3">
+                            <i class="bi bi-currency-dollar fs-3"></i>
+                        </div>
+                        <div>
+                            <p class="text-secondary small mb-0 text-uppercase fw-semibold">Revenue</p>
+                            <h3 class="fw-bold mb-0">$@ViewBag.TotalRevenue.ToString("0")</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Navigation Cards -->
+            <div class="col-lg-4">
+                <div class="card bg-card border-glass shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-glass p-4">
+                        <h5 class="fw-bold mb-0">Management</h5>
+                    </div>
+                    <div class="list-group list-group-flush rounded-bottom-4">
+                        <a asp-action="Events" class="list-group-item list-group-item-action bg-transparent text-light border-glass p-3 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-calendar3 me-3 text-primary"></i>Manage Events</span>
+                            <i class="bi bi-chevron-right text-secondary"></i>
+                        </a>
+                        <a asp-action="Users" class="list-group-item list-group-item-action bg-transparent text-light border-glass p-3 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-people me-3 text-primary"></i>Manage Users</span>
+                            <i class="bi bi-chevron-right text-secondary"></i>
+                        </a>
+                        <a asp-controller="Category" asp-action="Index" class="list-group-item list-group-item-action bg-transparent text-light border-glass p-3 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-grid me-3 text-primary"></i>View Categories</span>
+                            <i class="bi bi-chevron-right text-secondary"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings -->
+            <div class="col-lg-8">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-header bg-transparent border-glass p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Recent Bookings</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0 align-middle">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Date</th>
+                                        <th>Customer</th>
+                                        <th>Event</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in ViewBag.RecentBookings)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 text-secondary small">@booking.BookingDate.ToString("MMM dd, HH:mm")</td>
+                                            <td>@booking.CustomerName</td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="@booking.Event.Title">
+                                                    @booking.Event.Title
+                                                </div>
+                                            </td>
+                                            <td class="fw-semibold text-primary">$@booking.TotalPrice.ToString("0.00")</td>
+                                            <td>
+                                                @if (booking.PaymentStatus == "Paid")
+                                                {
+                                                    <span class="badge bg-success">Paid</span>
+                                                }
+                                                else if (booking.PaymentStatus == "Free")
+                                                {
+                                                    <span class="badge bg-info text-dark">Free</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (((List<Booking>)ViewBag.RecentBookings).Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-secondary">No recent bookings found.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-3px); border-color: var(--bs-primary) !important; }
+</style>

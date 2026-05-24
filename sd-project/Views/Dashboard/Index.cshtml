@@ -1,0 +1,271 @@
+@model EventBooking.Models.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "My Dashboard";
+}
+
+<section class="dashboard-section py-5 mt-5">
+    <div class="container">
+        <!-- Dashboard Header -->
+        <div class="row mb-5 align-items-center">
+            <div class="col-md-8">
+                <h1 class="fw-bold mb-2">Welcome back, @Model.User.FullName!</h1>
+                <p class="text-secondary mb-0">Manage your bookings, saved events, and profile settings.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="bi bi-person me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-primary-subtle text-primary p-3 me-3">
+                            <i class="bi bi-calendar-check fs-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">@Model.UpcomingEventsCount</h3>
+                            <p class="text-secondary mb-0 small text-uppercase fw-semibold tracking-wide">Upcoming Events</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-success-subtle text-success p-3 me-3">
+                            <i class="bi bi-ticket-perforated fs-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">@Model.TotalEventsAttended</h3>
+                            <p class="text-secondary mb-0 small text-uppercase fw-semibold tracking-wide">Events Attended</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-body p-4 d-flex align-items-center">
+                        <div class="rounded-circle bg-warning-subtle text-warning p-3 me-3">
+                            <i class="bi bi-wallet2 fs-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0">$@Model.TotalSpent.ToString("0.00")</h3>
+                            <p class="text-secondary mb-0 small text-uppercase fw-semibold tracking-wide">Total Spent</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tabs -->
+        <ul class="nav nav-pills mb-4 gap-2 border-bottom border-glass pb-3" id="dashboard-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-4" id="upcoming-tab" data-bs-toggle="pill" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">
+                    Upcoming Events
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4" id="past-tab" data-bs-toggle="pill" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">
+                    Past Events
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4" id="saved-tab" data-bs-toggle="pill" data-bs-target="#saved" type="button" role="tab" aria-controls="saved" aria-selected="false">
+                    Saved Events
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4" id="orders-tab" data-bs-toggle="pill" data-bs-target="#orders" type="button" role="tab" aria-controls="orders" aria-selected="false">
+                    Order History
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="dashboard-tabContent">
+            
+            <!-- Upcoming Events Tab -->
+            <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                @if (Model.UpcomingBookings.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var booking in Model.UpcomingBookings)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 bg-card border-glass shadow-sm overflow-hidden">
+                                    <div class="position-relative">
+                                        <img src="@booking.Event?.ImageUrl" alt="@booking.Event?.Title" class="card-img-top object-fit-cover" style="height: 160px;" />
+                                        <div class="position-absolute top-0 end-0 m-2">
+                                            <span class="badge bg-primary rounded-pill">@booking.Status</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold text-truncate" title="@booking.Event?.Title">@booking.Event?.Title</h5>
+                                        <p class="text-secondary small mb-3">
+                                            <i class="bi bi-calendar3 me-2"></i>@booking.Event?.Date.ToString("MMM dd, yyyy 'at' hh:mm tt")<br/>
+                                            <i class="bi bi-geo-alt me-2"></i>@booking.Event?.Location
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center p-3 bg-surface rounded-3 mb-3">
+                                            <div>
+                                                <small class="text-secondary d-block">Tickets</small>
+                                                <span class="fw-semibold">@booking.TicketCount x @booking.TicketType?.Name</span>
+                                            </div>
+                                            <div class="text-end">
+                                                <small class="text-secondary d-block">Total</small>
+                                                <span class="fw-bold text-primary">$@booking.TotalPrice.ToString("0.00")</span>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a asp-controller="Events" asp-action="Details" asp-route-id="@booking.EventId" class="btn btn-outline-primary btn-sm flex-grow-1">View Details</a>
+                                            <form asp-action="CancelBooking" asp-route-id="@booking.Id" method="post" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-lg"></i></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 bg-card border-glass rounded-4">
+                        <i class="bi bi-calendar-x text-muted display-1 mb-3 d-block"></i>
+                        <h5>No upcoming events</h5>
+                        <p class="text-secondary mb-4">You haven't booked any upcoming events yet.</p>
+                        <a asp-controller="Events" asp-action="Index" class="btn btn-primary">Browse Events</a>
+                    </div>
+                }
+            </div>
+
+            <!-- Past Events Tab -->
+            <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+                @if (Model.PastBookings.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var booking in Model.PastBookings)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 bg-surface border-glass shadow-sm overflow-hidden opacity-75">
+                                    <img src="@booking.Event?.ImageUrl" alt="@booking.Event?.Title" class="card-img-top object-fit-cover grayscale" style="height: 140px; filter: grayscale(100%);" />
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold text-truncate" title="@booking.Event?.Title">@booking.Event?.Title</h6>
+                                        <p class="text-secondary small mb-0">
+                                            <i class="bi bi-calendar3 me-2"></i>@booking.Event?.Date.ToString("MMM dd, yyyy")
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 bg-card border-glass rounded-4">
+                        <i class="bi bi-clock-history text-muted display-1 mb-3 d-block"></i>
+                        <h5>No past events</h5>
+                        <p class="text-secondary">You haven't attended any events yet.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Saved Events Tab -->
+            <div class="tab-pane fade" id="saved" role="tabpanel" aria-labelledby="saved-tab">
+                @if (Model.SavedEvents.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var saved in Model.SavedEvents)
+                        {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card h-100 bg-card border-glass shadow-sm">
+                                    <div class="position-relative">
+                                        <img src="@saved.Event?.ImageUrl" alt="@saved.Event?.Title" class="card-img-top object-fit-cover" style="height: 160px;" />
+                                        <form asp-action="UnsaveEvent" asp-route-eventId="@saved.EventId" method="post" class="position-absolute top-0 end-0 m-2">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-light rounded-circle shadow-sm text-danger p-2 lh-1">
+                                                <i class="bi bi-heart-fill"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title fw-bold">@saved.Event?.Title</h5>
+                                        <p class="text-secondary small mb-3">
+                                            <i class="bi bi-calendar3 me-2"></i>@saved.Event?.Date.ToString("MMM dd, yyyy")
+                                        </p>
+                                        <a asp-controller="Events" asp-action="Details" asp-route-id="@saved.EventId" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 bg-card border-glass rounded-4">
+                        <i class="bi bi-heart text-muted display-1 mb-3 d-block"></i>
+                        <h5>No saved events</h5>
+                        <p class="text-secondary">Events you save will appear here.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Order History Tab -->
+            <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                @if (Model.Orders.Any())
+                {
+                    <div class="table-responsive bg-card border-glass rounded-4 shadow-sm p-4">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Event</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.Orders)
+                                {
+                                    <tr>
+                                        <td><span class="text-primary fw-mono">@order.OrderNumber</span></td>
+                                        <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 250px;" title="@order.Booking?.Event?.Title">
+                                                @order.Booking?.Event?.Title
+                                            </div>
+                                        </td>
+                                        <td class="fw-semibold">$@order.TotalAmount.ToString("0.00")</td>
+                                        <td>
+                                            <span class="badge @(order.Status == "Confirmed" ? "bg-success" : "bg-danger")">@order.Status</span>
+                                        </td>
+                                        <td>
+                                            <a asp-controller="Booking" asp-action="Success" asp-route-id="@order.BookingId" class="btn btn-sm btn-outline-light">
+                                                <i class="bi bi-receipt"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-5 bg-card border-glass rounded-4">
+                        <i class="bi bi-receipt text-muted display-1 mb-3 d-block"></i>
+                        <h5>No order history</h5>
+                        <p class="text-secondary">Your completed orders will appear here.</p>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</section>

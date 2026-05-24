@@ -1,0 +1,133 @@
+@model EventBooking.Models.ViewModels.EventSearchViewModel
+@{
+    ViewData["Title"] = "Find Events";
+}
+
+<!-- ===== Page Header ===== -->
+<section class="page-header pb-4 pt-5 mt-5">
+    <div class="container">
+        <partial name="_Breadcrumb" model='new Dictionary<string, string> { { "Home", "/" }, { "Events", "" } }' />
+        <h1 class="page-title mt-3">
+            <i class="bi bi-calendar3 text-primary me-2"></i> Find Events
+        </h1>
+        <p class="page-subtitle">Discover and book tickets for the best upcoming events.</p>
+    </div>
+</section>
+
+<section class="events-search-section pb-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3">
+                <div class="card bg-card border-glass shadow-sm position-sticky" style="top: 100px;">
+                    <div class="card-header bg-transparent border-glass p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-funnel text-primary me-2"></i> Filters</h5>
+                        <a asp-action="Index" class="text-secondary small text-decoration-none">Clear</a>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="Index" method="get" id="filterForm">
+                            
+                            <!-- Search -->
+                            <div class="mb-4">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-surface border-glass text-secondary border-end-0"><i class="bi bi-search"></i></span>
+                                    <input type="text" asp-for="SearchQuery" name="search" class="form-control bg-surface border-glass text-light border-start-0 ps-0" placeholder="Keywords...">
+                                </div>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="mb-4">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Category</label>
+                                <select asp-for="CategoryId" name="categoryId" class="form-select bg-surface border-glass text-light" onchange="this.form.submit()">
+                                    <option value="">All Categories</option>
+                                    @foreach (var cat in Model.Categories)
+                                    {
+                                        <option value="@cat.Id">@cat.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="mb-4">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">City</label>
+                                <select asp-for="City" name="city" class="form-select bg-surface border-glass text-light" onchange="this.form.submit()">
+                                    <option value="">All Cities</option>
+                                    @foreach (var city in Model.Cities)
+                                    {
+                                        <option value="@city">@city</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Date Range -->
+                            <div class="mb-4">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Date Range</label>
+                                <input asp-for="DateFrom" name="dateFrom" type="date" class="form-control bg-surface border-glass text-light mb-2 text-sm" placeholder="From">
+                                <input asp-for="DateTo" name="dateTo" type="date" class="form-control bg-surface border-glass text-light text-sm" placeholder="To">
+                            </div>
+
+                            <!-- Price -->
+                            <div class="mb-4">
+                                <label class="form-label text-secondary small fw-bold text-uppercase">Price</label>
+                                <div class="form-check form-switch mb-3">
+                                    <input asp-for="FreeOnly" name="freeOnly" value="true" class="form-check-input" type="checkbox" onchange="this.form.submit()">
+                                    <label class="form-check-label text-light" asp-for="FreeOnly">Free Events Only</label>
+                                </div>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text bg-surface border-glass text-secondary">$</span>
+                                    <input asp-for="MinPrice" name="minPrice" type="number" min="0" class="form-control bg-surface border-glass text-light" placeholder="Min">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-surface border-glass text-secondary">$</span>
+                                    <input asp-for="MaxPrice" name="maxPrice" type="number" min="0" class="form-control bg-surface border-glass text-light" placeholder="Max">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill">Apply Filters</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="col-lg-9">
+                <!-- Sorting & Count -->
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-glass">
+                    <span class="text-secondary fw-semibold">Showing <span class="text-light fw-bold">@Model.Events.Count</span> events</span>
+                    
+                    <div class="d-flex align-items-center">
+                        <label class="text-secondary me-2 small text-nowrap">Sort By:</label>
+                        <select form="filterForm" asp-for="SortBy" name="sortBy" class="form-select form-select-sm bg-surface border-glass text-light w-auto" onchange="this.form.submit()">
+                            <option value="date">Date (Earliest)</option>
+                            <option value="price-low">Price (Low to High)</option>
+                            <option value="price-high">Price (High to Low)</option>
+                            <option value="name">Name (A-Z)</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if (Model.Events.Count == 0)
+                {
+                    <div class="text-center py-5 bg-card border-glass rounded-4 shadow-sm mt-4">
+                        <i class="bi bi-search display-1 text-muted mb-3 d-block"></i>
+                        <h3 class="mb-2">No events found</h3>
+                        <p class="text-secondary mb-4">We couldn't find any events matching your current filters.</p>
+                        <a asp-action="Index" class="btn btn-outline-primary px-4 rounded-pill">Clear All Filters</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="row g-4">
+                        @foreach (var item in Model.Events)
+                        {
+                            <div class="col-md-6 col-xl-4">
+                                <partial name="_EventCard" model="item" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,59 @@
+@model EventBooking.Models.Category
+@{
+    ViewData["Title"] = Model.Name + " Events";
+    var upcomingEvents = Model.Events.Where(e => e.Date >= DateTime.Now).OrderBy(e => e.Date).ToList();
+}
+
+<!-- ===== Page Header ===== -->
+<section class="page-header py-5 bg-surface mt-5 border-bottom border-glass position-relative overflow-hidden">
+    <!-- Optional: Background Image overlay for category -->
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: url('@Model.ImageUrl') center/cover; opacity: 0.15; z-index: 0;"></div>
+    }
+    
+    <div class="container position-relative py-4" style="z-index: 1;">
+        <partial name="_Breadcrumb" model='new Dictionary<string, string> { { "Home", "/" }, { "Categories", "/Category" }, { Model.Name, "" } }' />
+        
+        <div class="d-flex align-items-center mt-3">
+            <div class="bg-primary text-white rounded-4 p-3 me-4 shadow-sm d-none d-md-block">
+                <i class="bi @Model.Icon display-4"></i>
+            </div>
+            <div>
+                <h1 class="page-title fw-bold display-4 mb-2">@Model.Name Events</h1>
+                <p class="page-subtitle text-secondary fs-5 mb-0">@Model.Description</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Events Grid ===== -->
+<section class="events-section py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-glass">
+            <h4 class="fw-bold mb-0">Upcoming in @Model.Name</h4>
+            <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">@upcomingEvents.Count events</span>
+        </div>
+
+        @if (!upcomingEvents.Any())
+        {
+            <div class="text-center py-5 bg-card border-glass rounded-4 my-5">
+                <i class="bi bi-calendar-x text-muted display-1 mb-3 d-block"></i>
+                <h4 class="mb-2">No upcoming events</h4>
+                <p class="text-secondary mb-4">There are currently no upcoming events in the @Model.Name category.</p>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-primary px-4 rounded-pill">Browse All Events</a>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var eventItem in upcomingEvents)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <partial name="_EventCard" model="eventItem" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>

@@ -1,0 +1,200 @@
+@model EventBooking.Models.Event
+@{
+    ViewData["Title"] = "Event Details - Admin";
+}
+
+<section class="admin-section py-5 mt-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Event Dashboard</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb m-0 small">
+                        <li class="breadcrumb-item"><a asp-action="Index" class="text-secondary text-decoration-none">Admin</a></li>
+                        <li class="breadcrumb-item"><a asp-action="Events" class="text-secondary text-decoration-none">Events</a></li>
+                        <li class="breadcrumb-item active text-light" aria-current="page">@Model.Title</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-action="EditEvent" asp-route-id="@Model.Id" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="bi bi-pencil me-2"></i>Edit
+                </a>
+                <a asp-controller="Events" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary rounded-pill px-4" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-2"></i>View Public Page
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- Event Summary -->
+            <div class="col-lg-8">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="row g-0 h-100">
+                        <div class="col-md-4">
+                            <img src="@Model.ImageUrl" class="img-fluid rounded-start h-100 object-fit-cover" alt="@Model.Title">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h4 class="card-title fw-bold text-light mb-0">@Model.Title</h4>
+                                    <span class="badge bg-surface border border-secondary text-light">@Model.Category?.Name</span>
+                                </div>
+                                <p class="text-secondary small mb-4"><i class="bi bi-geo-alt me-1"></i> @Model.Location, @Model.City</p>
+                                
+                                <div class="row g-3 mb-4">
+                                    <div class="col-sm-6">
+                                        <div class="p-3 bg-surface rounded-3 border border-glass">
+                                            <div class="text-secondary small text-uppercase mb-1">Start Date</div>
+                                            <div class="fw-semibold text-light">@Model.Date.ToString("MMM dd, yyyy HH:mm")</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="p-3 bg-surface rounded-3 border border-glass">
+                                            <div class="text-secondary small text-uppercase mb-1">End Date</div>
+                                            <div class="fw-semibold text-light">@(Model.EndDate?.ToString("MMM dd, yyyy HH:mm") ?? "N/A")</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="text-secondary small text-uppercase mb-2">Sales Progress</div>
+                                    <div class="d-flex justify-content-between text-light small mb-1">
+                                        <span>@(Model.MaxCapacity - Model.AvailableTickets) Sold</span>
+                                        <span>@Model.MaxCapacity Total</span>
+                                    </div>
+                                    @{
+                                        var percent = Model.MaxCapacity > 0 ? ((Model.MaxCapacity - Model.AvailableTickets) * 100) / Model.MaxCapacity : 0;
+                                        var barColor = percent > 90 ? "bg-success" : "bg-primary";
+                                    }
+                                    <div class="progress" style="height: 10px; background-color: var(--bs-gray-800);">
+                                        <div class="progress-bar @barColor" role="progressbar" style="width: @percent%;" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Summary -->
+            <div class="col-lg-4">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-body p-4 d-flex flex-column justify-content-center text-center">
+                        <div class="rounded-circle bg-success-subtle text-success p-3 mx-auto mb-3" style="width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-cash-coin fs-2"></i>
+                        </div>
+                        <h6 class="text-secondary text-uppercase fw-semibold tracking-wide mb-2">Total Revenue</h6>
+                        <h2 class="fw-bold text-success display-5 mb-0">
+                            $@Model.Bookings.Where(b => b.PaymentStatus == "Paid").Sum(b => b.TotalPrice).ToString("0.00")
+                        </h2>
+                        <div class="mt-4 pt-3 border-top border-glass text-secondary small">
+                            From @Model.Bookings.Count(b => b.Status != "Cancelled") active bookings
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Ticket Types -->
+            <div class="col-md-5">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-header bg-transparent border-glass p-4">
+                        <h5 class="fw-bold mb-0">Ticket Types Breakdown</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush rounded-bottom-4">
+                            @foreach (var tt in Model.TicketTypes)
+                            {
+                                var sold = tt.Quantity - tt.AvailableCount;
+                                var ttPercent = tt.Quantity > 0 ? (sold * 100) / tt.Quantity : 0;
+                                
+                                <li class="list-group-item bg-transparent border-glass p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-bold text-light fs-5">@tt.Name</span>
+                                        <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">$@tt.Price.ToString("0.00")</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                                        <span>@sold / @tt.Quantity Sold</span>
+                                        <span>@tt.AvailableCount Left</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background-color: var(--bs-gray-800);">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: @ttPercent%;"></div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Bookings for this event -->
+            <div class="col-md-7">
+                <div class="card bg-card border-glass shadow-sm h-100">
+                    <div class="card-header bg-transparent border-glass p-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Attendee List</h5>
+                        <button class="btn btn-sm btn-outline-light"><i class="bi bi-download me-1"></i> Export CSV</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0 align-middle">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">Attendee</th>
+                                        <th>Ticket</th>
+                                        <th>Qty</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var booking in Model.Bookings.OrderByDescending(b => b.BookingDate))
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="fw-semibold text-light">@booking.CustomerName</div>
+                                                <div class="small text-secondary">@booking.Email</div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-surface border border-secondary text-light">
+                                                    @(booking.TicketType?.Name ?? "Standard")
+                                                </span>
+                                            </td>
+                                            <td class="text-center">@booking.TicketCount</td>
+                                            <td class="fw-semibold text-primary">$@booking.TotalPrice.ToString("0.00")</td>
+                                            <td>
+                                                @if (booking.Status == "Cancelled")
+                                                {
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                }
+                                                else if (booking.PaymentStatus == "Paid")
+                                                {
+                                                    <span class="badge bg-success">Paid</span>
+                                                }
+                                                else if (booking.PaymentStatus == "Free")
+                                                {
+                                                    <span class="badge bg-info text-dark">Free</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (!Model.Bookings.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-secondary">No attendees yet.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

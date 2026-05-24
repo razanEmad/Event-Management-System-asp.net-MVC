@@ -1,0 +1,189 @@
+@model List<EventBooking.Models.Event>
+@{
+    ViewData["Title"] = "Manage Events";
+}
+
+<section class="admin-section py-5 mt-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+            <div>
+                <h2 class="fw-bold mb-1">Manage Events</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb m-0 small">
+                        <li class="breadcrumb-item"><a asp-action="Index" class="text-secondary text-decoration-none">Admin</a></li>
+                        <li class="breadcrumb-item active text-light" aria-current="page">Events</li>
+                    </ol>
+                </nav>
+            </div>
+            <a asp-action="CreateEvent" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-plus-lg me-2"></i>Create New Event
+            </a>
+        </div>
+
+        <!-- Filters -->
+        <div class="card bg-card border-glass shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form asp-action="Events" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-surface border-glass text-secondary"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" class="form-control bg-surface border-glass text-light" placeholder="Search events..." value="@ViewBag.Search">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="categoryId" class="form-select bg-surface border-glass text-light">
+                            <option value="">All Categories</option>
+                            @foreach (var cat in ViewBag.Categories)
+                            {
+                                if (ViewBag.CategoryId != null && (int)ViewBag.CategoryId == cat.Id)
+                                {
+                                    <option value="@cat.Id" selected>@cat.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="city" class="form-select bg-surface border-glass text-light">
+                            <option value="">All Cities</option>
+                            @foreach (var city in ViewBag.Cities)
+                            {
+                                if (ViewBag.City != null && ViewBag.City.ToString() == city)
+                                {
+                                    <option value="@city" selected>@city</option>
+                                }
+                                else
+                                {
+                                    <option value="@city">@city</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Events List -->
+        <div class="card bg-card border-glass shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Event</th>
+                            <th>Date & Time</th>
+                            <th>Location</th>
+                            <th>Category</th>
+                            <th>Tickets</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <img src="@item.ImageUrl" alt="@item.Title" class="rounded object-fit-cover me-3" style="width: 48px; height: 48px;" />
+                                        <div>
+                                            <div class="fw-bold text-light mb-1">
+                                                @item.Title
+                                                @if (item.IsFeatured)
+                                                {
+                                                    <span class="badge bg-warning text-dark ms-1" title="Featured"><i class="bi bi-star-fill"></i></span>
+                                                }
+                                            </div>
+                                            <div class="small text-secondary">ID: @item.Id</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-light">@item.Date.ToString("MMM dd, yyyy")</div>
+                                    <div class="small text-secondary">@item.Date.ToString("hh:mm tt")</div>
+                                </td>
+                                <td>
+                                    <div class="text-light">@item.City</div>
+                                    <div class="small text-secondary text-truncate" style="max-width: 150px;" title="@item.Location">@item.Location</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-surface border border-secondary text-light">
+                                        <i class="bi @item.Category?.Icon me-1"></i>@item.Category?.Name
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        @{
+                                            var percent = item.MaxCapacity > 0 ? ((item.MaxCapacity - item.AvailableTickets) * 100) / item.MaxCapacity : 0;
+                                            var barColor = percent > 90 ? "bg-danger" : (percent > 70 ? "bg-warning" : "bg-success");
+                                        }
+                                        <div class="me-2 text-end" style="width: 45px;">
+                                            <span class="small @(item.AvailableTickets == 0 ? "text-danger fw-bold" : "text-light")">
+                                                @item.AvailableTickets
+                                            </span>
+                                            <span class="text-secondary small d-block" style="font-size: 0.65rem;">/ @item.MaxCapacity</span>
+                                        </div>
+                                        <div class="progress flex-grow-1" style="height: 6px; width: 60px; background-color: var(--bs-gray-800);">
+                                            <div class="progress-bar @barColor" role="progressbar" style="width: @percent%;" aria-valuenow="@percent" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        <a asp-action="EventDetails" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="EditEvent" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Delete Modal -->
+                                    <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1" aria-labelledby="deleteModalLabel-@item.Id" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content bg-card border-glass">
+                                                <div class="modal-header border-glass">
+                                                    <h5 class="modal-title" id="deleteModalLabel-@item.Id">Delete Event</h5>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body text-start">
+                                                    <p>Are you sure you want to delete <strong>@item.Title</strong>?</p>
+                                                    <p class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i> This action cannot be undone. All bookings and ticket types associated with this event will also be deleted.</p>
+                                                </div>
+                                                <div class="modal-footer border-glass">
+                                                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                                                    <form asp-action="DeleteEvent" asp-route-id="@item.Id" method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-danger">Delete Event</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        
+                        @if (Model.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <i class="bi bi-calendar-x display-4 text-muted mb-3 d-block"></i>
+                                    <p class="text-secondary mb-0">No events found matching your criteria.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

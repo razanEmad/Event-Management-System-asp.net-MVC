@@ -1,0 +1,149 @@
+@model EventBooking.Models.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- ===== Hero Section ===== -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-7">
+                <span class="hero-badge">
+                    <i class="bi bi-stars me-1"></i> Discover Amazing Events
+                </span>
+                <h1 class="hero-title">
+                    Find & Book<br />
+                    <span class="hero-gradient-text">Unforgettable Events</span>
+                </h1>
+                <p class="hero-description">
+                    Explore a curated selection of concerts, conferences, galas, and more.
+                    Your next amazing experience is just one click away.
+                </p>
+                <div class="hero-actions">
+                    <a asp-controller="Events" asp-action="Index" class="btn btn-hero-primary">
+                        <i class="bi bi-calendar3 me-2"></i> Browse Events
+                    </a>
+                    @if (!Model.IsAuthenticated)
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light px-4 py-2 ms-2 rounded-pill fw-bold">
+                            <i class="bi bi-person-plus me-2"></i> Join Now
+                        </a>
+                    }
+                </div>
+                
+                <!-- Quick Category Search -->
+                <div class="mt-5 p-3 bg-card border-glass shadow-lg rounded-pill d-inline-block d-md-flex align-items-center gap-3">
+                    <span class="text-secondary small fw-bold px-3 text-uppercase">Quick Browse:</span>
+                    <div class="d-flex gap-2 flex-wrap justify-content-center">
+                        @foreach (var cat in Model.Categories.Take(4))
+                        {
+                            <a asp-controller="Category" asp-action="Details" asp-route-slug="@cat.Slug" class="badge bg-surface text-light border border-secondary text-decoration-none py-2 px-3 hover-primary transition-all">
+                                <i class="bi @cat.Icon me-1"></i> @cat.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Featured Events Section ===== -->
+<section class="featured-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-badge">
+                <i class="bi bi-fire me-1"></i> Trending Now
+            </span>
+            <h2 class="section-title">Featured Events</h2>
+            <p class="section-subtitle">Don't miss out on these popular upcoming events</p>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var item in Model.FeaturedEvents)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <partial name="_EventCard" model="item" />
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-5">
+            <a asp-controller="Events" asp-action="Index" class="btn btn-view-all">
+                View All Events <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Personalized Recommendations ===== -->
+@if (Model.IsAuthenticated && Model.RecommendedEvents.Any())
+{
+<section class="recommendations-section py-5 bg-surface border-top border-bottom border-glass">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <span class="section-badge bg-primary-subtle text-primary border-primary">
+                    <i class="bi bi-magic me-1"></i> Just For You
+                </span>
+                <h2 class="section-title mb-0">Recommended Events</h2>
+                <p class="section-subtitle mb-0 mt-2">Based on your browsing history and interests</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var item in Model.RecommendedEvents)
+            {
+                <div class="col-md-6 col-lg-3">
+                    <partial name="_EventCard" model="item" />
+                </div>
+            }
+        </div>
+    </div>
+</section>
+}
+
+<!-- ===== Categories Section ===== -->
+<section class="categories-preview-section py-5 my-5">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title">Browse by Category</h2>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            @foreach (var category in Model.Categories.Take(8))
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <a asp-controller="Category" asp-action="Details" asp-route-slug="@category.Slug" class="text-decoration-none">
+                        <div class="card bg-card border-glass text-center h-100 hover-lift shadow-sm p-4">
+                            <i class="bi @category.Icon display-4 text-primary mb-3"></i>
+                            <h5 class="fw-bold text-light mb-1">@category.Name</h5>
+                            <span class="text-secondary small">@category.Events.Count(e => e.Date >= DateTime.Now) Events</span>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+        
+        <div class="text-center mt-5">
+            <a asp-controller="Category" asp-action="Index" class="btn btn-outline-light rounded-pill px-4">
+                Explore All Categories
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hover-primary:hover {
+        background-color: var(--bs-primary) !important;
+        border-color: var(--bs-primary) !important;
+    }
+    .hover-lift {
+        transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        border-color: var(--bs-primary) !important;
+    }
+</style>

@@ -1,0 +1,69 @@
+@model EventBooking.Models.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<section class="profile-section py-5 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="list-group list-group-flush rounded-3 shadow-sm">
+                    <a asp-action="Profile" class="list-group-item list-group-item-action active bg-primary border-primary text-white">
+                        <i class="bi bi-person me-2"></i> Edit Profile
+                    </a>
+                    <a asp-action="ChangePassword" class="list-group-item list-group-item-action bg-card text-light border-glass">
+                        <i class="bi bi-key me-2"></i> Change Password
+                    </a>
+                    <a asp-controller="Dashboard" asp-action="Index" class="list-group-item list-group-item-action bg-card text-light border-glass">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="card bg-card border-glass shadow-sm">
+                    <div class="card-header bg-transparent border-glass">
+                        <h4 class="mb-0 fw-bold">Edit Profile</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form asp-action="Profile" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="FullName" class="form-label text-secondary"></label>
+                                    <input asp-for="FullName" class="form-control bg-surface border-glass text-light" />
+                                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mt-3 mt-md-0">
+                                    <label asp-for="Email" class="form-label text-secondary"></label>
+                                    <input asp-for="Email" class="form-control bg-surface border-glass text-light" readonly />
+                                    <div class="form-text text-muted">Email address cannot be changed.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label asp-for="City" class="form-label text-secondary"></label>
+                                    <input asp-for="City" class="form-control bg-surface border-glass text-light" />
+                                    <span asp-validation-for="City" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6 mt-3 mt-md-0">
+                                    <label asp-for="PhoneNumber" class="form-label text-secondary"></label>
+                                    <input asp-for="PhoneNumber" class="form-control bg-surface border-glass text-light" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

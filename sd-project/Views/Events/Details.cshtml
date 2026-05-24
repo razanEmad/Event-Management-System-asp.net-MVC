@@ -1,0 +1,172 @@
+@model EventBooking.Models.ViewModels.EventDetailsViewModel
+@{
+    ViewData["Title"] = Model.Event.Title;
+}
+
+<!-- ===== Page Header / Breadcrumbs ===== -->
+<section class="page-header py-4 mt-5 bg-surface border-bottom border-glass">
+    <div class="container">
+        <partial name="_Breadcrumb" model='new Dictionary<string, string> { 
+            { "Home", "/" }, 
+            { "Events", "/Events" }, 
+            { Model.Event.Category?.Name ?? "Category", $"/Category/Details?slug={Model.Event.Category?.Slug}" },
+            { Model.Event.Title, "" } 
+        }' />
+    </div>
+</section>
+
+<!-- ===== Event Details ===== -->
+<section class="detail-section pt-5 pb-5">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Event Image & Description -->
+            <div class="col-lg-7">
+                <div class="detail-image-container mb-4 position-relative">
+                    <img src="@Model.Event.ImageUrl" alt="@Model.Event.Title" class="w-100 rounded-4 object-fit-cover shadow-lg border border-glass" style="height: 400px;" />
+                    @if (Model.Event.IsFeatured)
+                    {
+                        <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-star-fill me-1"></i> Featured Event
+                        </span>
+                    }
+                </div>
+
+                <div class="detail-description bg-card border-glass p-4 p-md-5 rounded-4 shadow-sm mb-5">
+                    <h3 class="detail-description-title fw-bold text-light mb-4 pb-3 border-bottom border-glass">
+                        <i class="bi bi-info-circle text-primary me-2"></i> About This Event
+                    </h3>
+                    <div class="text-secondary" style="white-space: pre-line; line-height: 1.8;">
+                        @Model.Event.Description
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Info Sidebar -->
+            <div class="col-lg-5">
+                <div class="detail-info-card bg-card border-glass p-4 p-md-5 rounded-4 shadow-lg position-sticky" style="top: 100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-surface border border-primary text-primary px-3 py-2 rounded-pill">
+                            <i class="bi @Model.Event.Category?.Icon me-1"></i> @Model.Event.Category?.Name
+                        </span>
+                        
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form asp-controller="Dashboard" asp-action="@(Model.IsEventSaved ? "UnsaveEvent" : "SaveEvent")" asp-route-eventId="@Model.Event.Id" method="post">
+                                <button type="submit" class="btn btn-sm rounded-circle shadow-sm @(Model.IsEventSaved ? "btn-light text-danger" : "btn-outline-light text-secondary")" style="width: 40px; height: 40px;" title="@(Model.IsEventSaved ? "Remove from saved" : "Save event")">
+                                    <i class="bi @(Model.IsEventSaved ? "bi-heart-fill" : "bi-heart")"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
+
+                    <h1 class="detail-title fw-bold text-light mb-4 display-6">@Model.Event.Title</h1>
+
+                    <div class="detail-meta-list mb-5">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-calendar3 fs-5"></i>
+                            </div>
+                            <div>
+                                <span class="d-block text-secondary small text-uppercase fw-bold">Date & Time</span>
+                                <span class="text-light fw-medium">@Model.Event.Date.ToString("dddd, MMMM dd, yyyy")</span><br />
+                                <span class="text-secondary">
+                                    @Model.Event.Date.ToString("hh:mm tt") 
+                                    @if (Model.Event.EndDate.HasValue) { 
+                                        <span> - @Model.Event.EndDate.Value.ToString("hh:mm tt")</span> 
+                                    }
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-geo-alt fs-5"></i>
+                            </div>
+                            <div>
+                                <span class="d-block text-secondary small text-uppercase fw-bold">Location</span>
+                                <span class="text-light fw-medium">@Model.Event.Location</span><br />
+                                <span class="text-secondary">@Model.Event.City</span>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Event.RecurrenceRule))
+                        {
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="bg-info-subtle text-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                    <i class="bi bi-arrow-repeat fs-5"></i>
+                                </div>
+                                <div>
+                                    <span class="d-block text-secondary small text-uppercase fw-bold">Recurrence</span>
+                                    <span class="text-light fw-medium">@Model.Event.RecurrenceRule</span>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                <i class="bi bi-ticket-perforated fs-5"></i>
+                            </div>
+                            <div>
+                                <span class="d-block text-secondary small text-uppercase fw-bold">Tickets</span>
+                                @if (Model.Event.AvailableTickets > 0)
+                                {
+                                    <span class="text-success fw-bold">@Model.Event.AvailableTickets remaining</span>
+                                }
+                                else
+                                {
+                                    <span class="text-danger fw-bold">Sold Out</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.IsUserRegistered)
+                    {
+                        <div class="alert bg-success-subtle border-success text-success d-flex align-items-center rounded-3 p-3 mb-4">
+                            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-success">You're going!</h6>
+                                <p class="mb-0 small">You have already booked tickets for this event.</p>
+                            </div>
+                        </div>
+                        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-success w-100 py-3 rounded-pill fw-bold">
+                            View My Bookings
+                        </a>
+                    }
+                    else if (Model.Event.AvailableTickets > 0)
+                    {
+                        <a asp-controller="Booking" asp-action="Create" asp-route-id="@Model.Event.Id"
+                           class="btn btn-hero-primary w-100 py-3 rounded-pill shadow-lg d-flex justify-content-center align-items-center fs-5">
+                            Get Tickets <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                        <p class="text-center text-secondary small mt-3 mb-0">From $@(Model.TicketTypes.Any() ? Model.TicketTypes.Min(t => t.Price).ToString("0.00") : Model.Event.Price.ToString("0.00"))</p>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary w-100 py-3 rounded-pill fw-bold fs-5" disabled>
+                            <i class="bi bi-x-circle me-2"></i> Sold Out
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== Related Events ===== -->
+@if (Model.RelatedEvents.Any())
+{
+<section class="related-section py-5 bg-surface border-top border-glass">
+    <div class="container py-4">
+        <h3 class="fw-bold mb-4 text-light">You might also like...</h3>
+        <div class="row g-4">
+            @foreach (var related in Model.RelatedEvents)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <partial name="_EventCard" model="related" />
+                </div>
+            }
+        </div>
+    </div>
+</section>
+}

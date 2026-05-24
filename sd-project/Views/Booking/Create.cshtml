@@ -1,0 +1,206 @@
+@model EventBooking.Models.ViewModels.BookingCreateViewModel
+@{
+    ViewData["Title"] = "Book Tickets - " + Model.Event.Title;
+}
+
+<section class="booking-section py-5 mt-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <partial name="_Breadcrumb" model='new Dictionary<string, string> { 
+                    { "Home", "/" }, 
+                    { "Events", "/Events" }, 
+                    { Model.Event.Title, $"/Events/Details/{Model.Event.Id}" },
+                    { "Book Tickets", "" } 
+                }' />
+
+                <div class="row g-4 mt-2">
+                    <!-- Event Summary Card -->
+                    <div class="col-md-5">
+                        <div class="card bg-card border-glass shadow-sm rounded-4 h-100 position-sticky" style="top: 100px;">
+                            <img src="@Model.Event.ImageUrl" alt="@Model.Event.Title" class="card-img-top object-fit-cover rounded-top-4" style="height: 200px;" />
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold text-light mb-4">@Model.Event.Title</h5>
+                                
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-calendar3 text-primary fs-5 me-3"></i>
+                                    <div>
+                                        <div class="text-light fw-medium">@Model.Event.Date.ToString("MMM dd, yyyy")</div>
+                                        <div class="text-secondary small">@Model.Event.Date.ToString("hh:mm tt")</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="bi bi-geo-alt text-primary fs-5 me-3"></i>
+                                    <div>
+                                        <div class="text-light fw-medium">@Model.Event.Location</div>
+                                        <div class="text-secondary small">@Model.Event.City</div>
+                                    </div>
+                                </div>
+                                
+                                <hr class="border-glass my-4" />
+                                
+                                <h6 class="text-light fw-bold mb-3">Available Tickets</h6>
+                                @foreach (var tt in Model.TicketTypes)
+                                {
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-glass last-no-border">
+                                        <div>
+                                            <span class="text-light">@tt.Name</span>
+                                            @if (!string.IsNullOrEmpty(tt.Description))
+                                            {
+                                                <div class="text-secondary small" style="font-size: 0.75rem;">@tt.Description</div>
+                                            }
+                                        </div>
+                                        <span class="badge bg-surface border border-primary text-primary px-2 py-1">$@tt.Price.ToString("0.00")</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Form -->
+                    <div class="col-md-7">
+                        <div class="card bg-card border-glass shadow-lg rounded-4">
+                            <div class="card-header bg-transparent border-glass p-4 pb-0">
+                                <h3 class="fw-bold mb-0"><i class="bi bi-ticket-perforated text-primary me-2"></i> Select Tickets</h3>
+                            </div>
+                            <div class="card-body p-4 p-md-5">
+
+                                <!-- Display validation summary -->
+                                <div asp-validation-summary="ModelOnly" class="alert bg-danger-subtle border-danger text-danger rounded-3 p-3 mb-4" style="display:@(ViewData.ModelState.ErrorCount > 0 ? "block" : "none")"></div>
+
+                                <form asp-action="Create" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" asp-for="EventId" />
+
+                                    <h5 class="fw-bold text-light border-bottom border-glass pb-2 mb-4">Ticket Selection</h5>
+
+                                    <!-- Ticket Type Selection -->
+                                    <div class="mb-4">
+                                        <label class="form-label text-secondary fw-semibold">Choose Ticket Type *</label>
+                                        <div class="row g-3">
+                                            @foreach (var tt in Model.TicketTypes)
+                                            {
+                                                <div class="col-12">
+                                                    <div class="position-relative">
+                                                        <input type="radio" class="btn-check ticket-type-radio" name="TicketTypeId" id="ticket_@tt.Id" value="@tt.Id" data-price="@tt.Price" required @(Model.TicketTypes.First().Id == tt.Id ? "checked" : "")>
+                                                        <label class="btn btn-outline-primary text-start w-100 p-3 d-flex justify-content-between align-items-center rounded-3" for="ticket_@tt.Id">
+                                                            <div>
+                                                                <span class="fw-bold d-block mb-1">@tt.Name</span>
+                                                                <span class="small opacity-75">@tt.AvailableCount left</span>
+                                                            </div>
+                                                            <span class="fs-5 fw-bold">$@tt.Price.ToString("0.00")</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <span asp-validation-for="TicketTypeId" class="text-danger small"></span>
+                                    </div>
+
+                                    <!-- Number of Tickets -->
+                                    <div class="mb-5">
+                                        <label asp-for="TicketCount" class="form-label text-secondary fw-semibold">Quantity *</label>
+                                        <div class="input-group">
+                                            <button class="btn btn-outline-secondary px-3" type="button" id="btn-minus"><i class="bi bi-dash"></i></button>
+                                            <input asp-for="TicketCount" class="form-control bg-surface border-glass text-light text-center fw-bold fs-5" id="ticketCount" type="number" min="1" max="10" />
+                                            <button class="btn btn-outline-secondary px-3" type="button" id="btn-plus"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                        <span asp-validation-for="TicketCount" class="text-danger small"></span>
+                                        <div class="form-text text-secondary mt-2">Maximum 10 tickets per booking.</div>
+                                    </div>
+
+                                    <h5 class="fw-bold text-light border-bottom border-glass pb-2 mb-4">Your Information</h5>
+
+                                    <!-- Customer Details -->
+                                    <div class="form-floating mb-3">
+                                        <input asp-for="CustomerName" class="form-control bg-surface border-glass text-light" placeholder="Your full name" />
+                                        <label asp-for="CustomerName" class="text-secondary"><i class="bi bi-person me-1"></i> Full Name *</label>
+                                        <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="form-floating mb-4">
+                                        <input asp-for="Email" class="form-control bg-surface border-glass text-light" placeholder="your@email.com" />
+                                        <label asp-for="Email" class="text-secondary"><i class="bi bi-envelope me-1"></i> Email Address *</label>
+                                        <span asp-validation-for="Email" class="text-danger small"></span>
+                                        @if (User.Identity?.IsAuthenticated == false)
+                                        {
+                                            <div class="form-text text-warning mt-2"><i class="bi bi-info-circle me-1"></i> Tip: <a asp-controller="Account" asp-action="Login" asp-route-returnurl="@Context.Request.Path" class="text-primary">Log in</a> for faster checkout and to save your booking.</div>
+                                        }
+                                    </div>
+
+                                    <!-- Total & Submit -->
+                                    <div class="bg-surface border border-primary border-opacity-25 rounded-3 p-4 mb-4">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fs-5 text-light fw-medium">Order Total:</span>
+                                            <span class="fs-3 fw-bold text-primary" id="orderTotal">$0.00</span>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold fs-5 shadow-sm">
+                                        Continue to Payment <i class="bi bi-arrow-right ms-2"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .btn-check:checked + .btn-outline-primary {
+        background-color: var(--bs-primary);
+        color: white;
+        border-color: var(--bs-primary);
+    }
+    .last-no-border:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            function updateTotal() {
+                var price = parseFloat($('.ticket-type-radio:checked').data('price')) || 0;
+                var count = parseInt($('#ticketCount').val()) || 1;
+                var total = price * count;
+                $('#orderTotal').text('$' + total.toFixed(2));
+                
+                // Update button text if free
+                if(total === 0) {
+                    $('button[type="submit"]').html('Confirm Booking <i class="bi bi-check-circle ms-2"></i>');
+                } else {
+                    $('button[type="submit"]').html('Continue to Payment <i class="bi bi-arrow-right ms-2"></i>');
+                }
+            }
+
+            $('.ticket-type-radio').change(updateTotal);
+            $('#ticketCount').on('input change', updateTotal);
+
+            $('#btn-plus').click(function() {
+                var val = parseInt($('#ticketCount').val());
+                if (val < 10) {
+                    $('#ticketCount').val(val + 1).trigger('change');
+                }
+            });
+
+            $('#btn-minus').click(function() {
+                var val = parseInt($('#ticketCount').val());
+                if (val > 1) {
+                    $('#ticketCount').val(val - 1).trigger('change');
+                }
+            });
+
+            // Initial calculation
+            updateTotal();
+        });
+    </script>
+}
