@@ -71,7 +71,7 @@ EventBooking/
 ## 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/event-booking-system.git
+git clone https://github.com/razanEmad/Event-Management-System-asp.net-MVC
 cd event-booking-system
 ```
 
